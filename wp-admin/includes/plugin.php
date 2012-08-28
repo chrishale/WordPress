@@ -245,14 +245,19 @@ function get_plugins($plugin_folder = '') {
 		$plugin_root .= $plugin_folder;
 
 	// Files in wp-content/plugins directory
-	$plugins_dir = @ opendir( $plugin_root);
+	$plugins_dir = @ opendir( $plugin_root );
 	$plugin_files = array();
 	if ( $plugins_dir ) {
 		while (($file = readdir( $plugins_dir ) ) !== false ) {
 			if ( substr($file, 0, 1) == '.' )
 				continue;
-			if ( is_dir( $plugin_root.'/'.$file ) ) {
-				$plugins_subdir = @ opendir( $plugin_root.'/'.$file );
+				
+			$full_file_path = $plugin_root.'/'.$file;
+			if ( is_link( $full_file_path ) )
+				$full_file_path = readlink( $full_file_path );
+				
+			if ( is_dir( $full_file_path ) ) {
+				$plugins_subdir = @ opendir( $full_file_path );
 				if ( $plugins_subdir ) {
 					while (($subfile = readdir( $plugins_subdir ) ) !== false ) {
 						if ( substr($subfile, 0, 1) == '.' )
