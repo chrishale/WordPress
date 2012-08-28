@@ -569,6 +569,11 @@ function plugin_basename($file) {
 	$plugin_dir = preg_replace('|/+|','/', $plugin_dir); // remove any duplicate slash
 	$mu_plugin_dir = str_replace('\\','/',WPMU_PLUGIN_DIR); // sanitize for Win32 installs
 	$mu_plugin_dir = preg_replace('|/+|','/', $mu_plugin_dir); // remove any duplicate slash
+	
+	static $plugin_links_replaces;
+	$plugin_links_replaces = plugin_links_replaces();
+	$file = preg_replace( array_keys($plugin_links_replaces), array_values($plugin_links_replaces), $file);
+	
 	$file = preg_replace('#^' . preg_quote($plugin_dir, '#') . '/|^' . preg_quote($mu_plugin_dir, '#') . '/#','',$file); // get relative path from plugins dir
 	
   $dir      = basename(dirname($file));
@@ -578,6 +583,31 @@ function plugin_basename($file) {
   $file =  trim($filepath, '/');
 
 	return $file;
+}
+
+function plugin_links( $plugin_root = WP_PLUGIN_DIR ) {
+	$links = array();
+
+	$plugins_dir = @ opendir( $plugin_root );
+	while (($file = readdir( $plugins_dir ) ) !== false ) {
+		if ( substr($file, 0, 1) == '.' )
+			continue;
+			
+		if ( is_link( $plugin_root.'/'.$file ) ) {
+			$links[$file] = untrailingslashit(readlink( $plugin_root.'/'.$file ));
+		}
+	}
+	@closedir( $plugins_dir );
+	
+	return $links;
+}
+
+function plugin_links_replaces( $plugin_root = WP_PLUGIN_DIR ) {
+	$links = array();
+	$plugin_links = plugin_links( $plugin_root );
+	foreach ( $plugin_links as $file => $target )
+		$links['#^' . preg_quote($target, '#') . '(/|$)#'] = $file . '$1';
+	return $links;
 }
 
 /**
