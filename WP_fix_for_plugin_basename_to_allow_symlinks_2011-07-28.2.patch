@@ -1,0 +1,42 @@
+diff --git a/WP_fix_for_plugin_basename_to_allow_symlinks_2011-07-28.patch b/WP_fix_for_plugin_basename_to_allow_symlinks_2011-07-28.patch
+index 95e39fc..e69de29 100644
+--- a/WP_fix_for_plugin_basename_to_allow_symlinks_2011-07-28.patch
++++ b/WP_fix_for_plugin_basename_to_allow_symlinks_2011-07-28.patch
+@@ -1,17 +0,0 @@
+-diff --git a/wp-includes/plugin.php b/wp-includes/plugin.php
+-index 945461c..5bc475d 100644
+---- a/wp-includes/plugin.php
+-+++ b/wp-includes/plugin.php
+-@@ -567,7 +567,11 @@ function plugin_basename($file) {
+- 	$mu_plugin_dir = str_replace('\\','/',WPMU_PLUGIN_DIR); // sanitize for Win32 installs
+- 	$mu_plugin_dir = preg_replace('|/+|','/', $mu_plugin_dir); // remove any duplicate slash
+- 	$file = preg_replace('#^' . preg_quote($plugin_dir, '#') . '/|^' . preg_quote($mu_plugin_dir, '#') . '/#','',$file); // get relative path from plugins dir
+--	$file = trim($file, '/');
+-+	
+-+	$dir      = basename(dirname($file));
+-+	$filename = basename($file);
+-+
+-+	$file = trim($dir . '/' . $filename, '/');
+- 	return $file;
+- }
+- 
+diff --git a/wp-includes/plugin.php b/wp-includes/plugin.php
+index 5bc475d..5b5e693 100644
+--- a/wp-includes/plugin.php
++++ b/wp-includes/plugin.php
+@@ -568,10 +568,12 @@ function plugin_basename($file) {
+ 	$mu_plugin_dir = preg_replace('|/+|','/', $mu_plugin_dir); // remove any duplicate slash
+ 	$file = preg_replace('#^' . preg_quote($plugin_dir, '#') . '/|^' . preg_quote($mu_plugin_dir, '#') . '/#','',$file); // get relative path from plugins dir
+ 	
+-	$dir      = basename(dirname($file));
+-	$filename = basename($file);
++  $dir      = basename(dirname($file));
++  $filename = basename($file);
++  $filepath = ($dir == '.') ?  $filename : $dir . '/' . $filename;
++ 
++  $file =  trim($filepath, '/');
+ 
+-	$file = trim($dir . '/' . $filename, '/');
+ 	return $file;
+ }
+ 
